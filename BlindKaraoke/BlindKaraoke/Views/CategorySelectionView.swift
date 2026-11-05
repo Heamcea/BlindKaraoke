@@ -8,24 +8,61 @@
 import SwiftUI
 
 struct CategorySelectionView: View {
-    
+
     let players: [Player]
-    
+
+    @State private var categories: [MusicCategory] = []
+    @State private var isLoading = true
+    @State private var errorMessage: String?
+
+    private let driveAPIClient = DriveAPIClient()
+
     var body: some View {
-        VStack(spacing: 20) {
-            Text("Choose Categories")
-                .font(.largeTitle)
-                .bold()
-            
-            Text("Players: \(players.count)")
-                .foregroundStyle(.secondary)
-            
-            ForEach(players) { player in
-                Text(player.name)
+        Group {
+            if isLoading {
+                VStack(spacing: 12) {
+                    ProgressView()
+
+                    Text("Loading categories...")
+                        .foregroundStyle(.secondary)
+                }
+            } else if let errorMessage {
+                VStack(spacing: 12) {
+                    Text("Could not load categories")
+                        .font(.headline)
+
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                .padding()
+            } else {
+                List(categories) { category in
+                    Text(category.name)
+                }
             }
         }
-        .padding()
         .navigationTitle("Categories")
-        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            loadCategories()
+        }
+    }
+
+    private func loadCategories() {
+        driveAPIClient.fetchCategories {
+            loadedCategories,
+            error in
+
+            isLoading = false
+
+            if let loadedCategories {
+                categories = loadedCategories
+                return
+            }
+
+            if let error {
+                errorMessage = error.localizedDescription
+            }
+        }
     }
 }
