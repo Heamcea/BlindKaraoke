@@ -5,7 +5,6 @@
 //  Created by Hamza Ahmad
 //
 
-
 import Foundation
 
 enum SecretsExample { //remove "Example" = SecretsExample -> Secrets
